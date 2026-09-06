@@ -1,7 +1,10 @@
 const mongoose = require('mongoose')
+const dotenv = require('dotenv')
+
+const MONGO_URI = process.env.MONGO_URI
 const connectDB = async () => {
     try {
-        await mongoose.connect('mongodb://localhost:27017/grocerygo', {
+        await mongoose.connect(MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         })

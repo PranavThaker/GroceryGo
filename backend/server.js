@@ -1,15 +1,20 @@
 const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
+const dotenv = require('dotenv')
 const app = express()
+dotenv.config()
+
+const SESSION_SECRET = process.env.SESSION_SECRET
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: CLIENT_ORIGIN,
     credentials: true
 }))
 app.use(express.json())
 app.use(session({
-    secret: "thisissecretkey",
+    secret: SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
     cookie: {

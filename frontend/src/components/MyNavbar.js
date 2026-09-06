@@ -188,9 +188,14 @@ function Navbar({ isLoggedIn, cartCount = 0, totalCost = 0 }) {
                                 </button>
                             </div>
                         ) : (
-                            <NavLink to="/login" className="btn btn-outline-primary">
-                                Login
-                            </NavLink>
+                            <div className="d-flex align-items-center gap-2">
+                                <NavLink to="/login" className="btn btn-outline-primary">
+                                    Login
+                                </NavLink>
+                                <NavLink to="/signup" className="btn btn-outline-primary">
+                                    Sign Up
+                                </NavLink>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -4,6 +4,13 @@ const bcrypt = require('bcrypt')
 exports.signup = async (req, res) => {
     try {
         const { name, email, password } = req.body
+        if (!email || !password || !name) {
+            return res.status(400).json({ message: 'Error creating user' })
+        }
+        const existingUser = await User.findOne({ email })
+        if (existingUser) {
+            return res.status(401).json({ message: 'User already exists' })
+        }
         const hashPassword = await bcrypt.hash(password, 10)
         const user = new User({ name, email, password: hashPassword })
         await user.save()
@@ -19,7 +26,7 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body
         const user = await User.findOne({ email })
-        if (!user || !bcrypt.compare(password, user.password)) {
+        if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({ message: 'Invalid email or password' })
         }
         req.session.user = {

@@ -1,231 +1,104 @@
-# GroceryGo - Online Grocery Store
+# GroceryGo — Full-Stack Grocery E-Commerce App
 
-A modern, responsive online grocery store built with React.js, Node.js, Express, and MongoDB. Features include user authentication, product management, shopping cart functionality, and an admin dashboard.
+A full-stack grocery e-commerce application built with the MERN stack, containerized with Docker, backed by a 52-case automated test suite, and load-tested with k6.
 
 ## Features
 
-### 🛒 Customer Features
+### Customer
+- **Authentication** — signup/login with bcrypt-hashed passwords and server-side sessions
+- **Product Browsing** — search, category filtering, and sorting (by name/price/category)
+- **Shopping Cart** — add, update quantity, and remove items with live total calculation
+- **Quick Picks** — randomized product recommendations on the homepage
+- **Profile Management** — update personal details (name, phone, address)
 
-- **User Authentication**: Secure login/signup system
-- **Product Browsing**: Browse products by category with search and filter
-- **Shopping Cart**: Add/remove items, update quantities
-- **Quick Picks**: Random product recommendations
-- **User Profile**: Manage personal information and view order history
-- **Responsive Design**: Works on desktop, tablet, and mobile
-
-### 👨‍💼 Admin Features
-
-- **Dashboard**: Overview of sales, users, and products
-- **Product Management**: CRUD operations for products
-- **User Management**: View and manage user accounts
-- **Order Management**: Track and manage orders
-- **Real-time Statistics**: Sales and inventory analytics
-
-### 🎨 Design Features
-
-- **Modern UI**: Clean, professional design with Bootstrap 5
-- **Theme Consistency**: Green color scheme matching grocery theme
-- **Interactive Elements**: Hover effects, animations, and smooth transitions
-- **Mobile-First**: Responsive design for all screen sizes
+### Admin
+- **Role-Based Access Control** — protected admin routes gated by an `isAdmin` flag on the user session
+- **Product Management** — full CRUD (create, read, update, delete) on the product catalogue
+- **User Directory** — view all registered users (read-only)
 
 ## Tech Stack
 
-### Frontend
+**Frontend:** React.js, React Router, Bootstrap 5, Axios
+**Backend:** Node.js, Express.js, Mongoose, express-session, bcrypt
+**Database:** MongoDB
+**Testing:** Jest, Supertest, mongodb-memory-server (backend) · Jest, React Testing Library (frontend)
+**Infrastructure:** Docker, Docker Compose
+**Load Testing:** k6
 
-- **React.js 19** - UI framework
-- **Bootstrap 5** - CSS framework
-- **React Router** - Navigation
-- **React Icons** - Icon library
-- **Axios** - HTTP client
+## Architecture
 
-### Backend
+Three containerized services orchestrated via Docker Compose:
+- `frontend` — React app, built and served as static files
+- `backend` — Express REST API
+- `mongo` — MongoDB with a persistent named volume
 
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **MongoDB** - Database
-- **Mongoose** - ODM
-- **Express Session** - Session management
-- **CORS** - Cross-origin resource sharing
+Configuration (database URI, session secret, CORS origin) is externalized via environment variables — no secrets are hardcoded in source.
 
-## Installation & Setup
+## Getting Started
 
 ### Prerequisites
+- Docker and Docker Compose
 
-- Node.js (v16 or higher)
-- MongoDB (v5 or higher)
-- npm or yarn
-
-### 1. Clone the Repository
+### Run with Docker
 
 ```bash
-git clone <repository-url>
-cd grocerygo
+# 1. Copy the example env file and fill in real values
+cp backend/.env.example backend/.env
+
+# 2. Build and start all services
+docker compose up --build
+
+# 3. Seed the product catalogue (first run only)
+docker compose exec backend node seed.js
 ```
 
-### 2. Backend Setup
+The app will be available at `http://localhost:3000`, with the API at `http://localhost:5000`.
+
+### Run without Docker (local development)
 
 ```bash
+# Backend
 cd backend
 npm install
-```
-
-### 3. Database Setup
-
-Make sure MongoDB is running on your system. The application will connect to `mongodb://localhost:27017/grocerygo`
-
-### 4. Seed the Database
-
-```bash
-npm run seed
-```
-
-This will create sample products and users:
-
-- **Admin User**: admin@grocerygo.com / admin123
-- **Regular User**: john@example.com / password123
-
-### 5. Start Backend Server
-
-```bash
-npm start
-# or for development with auto-restart
+cp .env.example .env   # fill in MONGO_URI, SESSION_SECRET, CLIENT_ORIGIN
 npm run dev
-```
 
-Backend will run on `http://localhost:5000`
-
-### 6. Frontend Setup
-
-```bash
-cd ../frontend
+# Frontend (separate terminal)
+cd frontend
 npm install
-```
-
-### 7. Start Frontend Development Server
-
-```bash
 npm start
 ```
 
-Frontend will run on `http://localhost:3000`
+## Testing
+
+**Backend** — 27 test cases (auth, cart, admin route protection) using Jest + Supertest against an in-memory MongoDB instance:
+```bash
+cd backend
+npm test
+```
+
+**Frontend** — 25 test cases covering Login, Signup, Cart, and App shell using Jest + React Testing Library:
+```bash
+cd frontend
+npm test
+```
+
+## Load Testing
+
+The API has been load-tested with [k6](https://k6.io/) simulating a full user journey (signup → login → browse → add to cart → update cart) at 50 concurrent virtual users against the Dockerized stack:
+
+- **0% request failure rate**
+- **p95 latency: 81.46ms**
+- **618 completed user journeys**, 6,180/6,180 checks passed
+
+See [`load-test/RESULTS.md`](./load-test/RESULTS.md) for full details and [`load-test/README.md`](./load-test/README.md) for how to run it yourself.
 
 ## Project Structure
 
 ```
-grocerygo/
-├── backend/
-│   ├── config/
-│   │   └── db.js
-│   ├── controllers/
-│   │   ├── authController.js
-│   │   ├── adminController.js
-│   │   ├── cartController.js
-│   │   └── productController.js
-│   ├── models/
-│   │   ├── userModel.js
-│   │   ├── productModel.js
-│   │   └── cartModel.js
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── adminRoutes.js
-│   │   ├── cartRoutes.js
-│   │   └── productRoutes.js
-│   ├── server.js
-│   ├── seedData.js
-│   └── package.json
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── MyNavbar.js
-│   │   │   ├── HomeBanner.js
-│   │   │   ├── Categories.js
-│   │   │   ├── Features.js
-│   │   │   └── QuickPicks.js
-│   │   ├── pages/
-│   │   │   ├── Home.js
-│   │   │   ├── Products.js
-│   │   │   ├── Cart.js
-│   │   │   ├── Profile.js
-│   │   │   ├── Admin.js
-│   │   │   ├── Login.js
-│   │   │   └── Signup.js
-│   │   ├── App.js
-│   │   ├── App.css
-│   │   └── index.js
-│   └── package.json
-└── README.md
+GroceryGo/
+├── backend/          # Express API, Mongoose models, Jest test suite
+├── frontend/          # React app
+├── load-test/          # k6 load testing script and results
+└── docker-compose.yaml
 ```
-
-## API Endpoints
-
-### Authentication
-
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/session` - Check session
-- `PUT /api/auth/profile` - Update profile
-
-### Products
-
-- `GET /api/products` - Get all products
-- `GET /api/products/:id` - Get single product
-- `POST /api/products` - Create product (admin)
-- `PUT /api/products/:id` - Update product (admin)
-- `DELETE /api/products/:id` - Delete product (admin)
-
-### Cart
-
-- `GET /api/cart` - Get user cart
-- `POST /api/cart` - Add item to cart
-- `PUT /api/cart/:productId` - Update cart item quantity
-- `DELETE /api/cart/:productId` - Remove item from cart
-
-### Admin
-
-- `GET /api/admin/users` - Get all users
-- `GET /api/admin/orders` - Get all orders
-- `GET /api/admin/products` - Get all products
-
-## Usage
-
-### For Customers
-
-1. **Register/Login**: Create an account or login with existing credentials
-2. **Browse Products**: Use search and filters to find products
-3. **Add to Cart**: Click "Add to Cart" on any product
-4. **Manage Cart**: View cart, update quantities, or remove items
-5. **Checkout**: Proceed to checkout (implementation pending)
-6. **Profile**: Update personal information and view order history
-
-### For Admins
-
-1. **Login**: Use admin credentials (admin@grocerygo.com / admin123)
-2. **Dashboard**: View sales statistics and overview
-3. **Manage Products**: Add, edit, or delete products
-4. **User Management**: View user accounts and details
-5. **Order Management**: Track and manage customer orders
-
-## Customization
-
-### Adding New Categories
-
-1. Update the category options in the Admin product form
-2. Add category-specific styling in `App.css`
-3. Update the filter options in the Products page
-
-### Styling Changes
-
-- Modify `frontend/src/App.css` for global styles
-- Use Bootstrap classes for component-specific styling
-- Update CSS variables in `:root` for theme colors
-
-### Adding New Features
-
-1. Create new components in `frontend/src/components/`
-2. Add new pages in `frontend/src/pages/`
-3. Create corresponding backend routes and controllers
-4. Update the main App.js routing
-
-**Happy Shopping! 🛒**
